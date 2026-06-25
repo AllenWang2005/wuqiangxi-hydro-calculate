@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>五强溪水电站 · 水利计算课程设计计算系统</title>
+<style>
+  :root{
+    --bg:#0f1b2d; --panel:#16263d; --panel2:#1d3050; --card:#1b2c45;
+    --line:#27406a; --ink:#e8eef7; --muted:#9fb2cd; --accent:#3da9fc;
+    --accent2:#19e0a8; --warn:#ffb454; --bad:#ff6b6b; --good:#19e0a8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+    background:linear-gradient(160deg,#0f1b2d,#0a1422);color:var(--ink);font-size:14px;line-height:1.55;
+  }
+  header.top{
+    padding:16px 22px;background:linear-gradient(90deg,#12243d,#0e1c30);
+    border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    position:sticky;top:0;z-index:30;box-shadow:0 2px 18px rgba(0,0,0,.35)
+  }
+  header.top h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.5px}
+  header.top .sub{color:var(--muted);font-size:12px}
+  .scheme-pick{margin-left:auto;display:flex;gap:6px;align-items:center}
+  .scheme-pick b{color:var(--muted);font-weight:500;font-size:12px;margin-right:4px}
+  .schip{
+    padding:6px 12px;border:1px solid var(--line);border-radius:20px;cursor:pointer;
+    background:#13243c;font-size:13px;transition:.15s;user-select:none
+  }
+  .schip:hover{border-color:var(--accent)}
+  .schip.on{background:var(--accent);border-color:var(--accent);color:#06121f;font-weight:700}
+  nav.tabs{display:flex;gap:4px;padding:0 18px;background:#0e1c30;border-bottom:1px solid var(--line);
+    overflow-x:auto;position:sticky;top:58px;z-index:25}
+  nav.tabs button{
+    background:none;border:none;color:var(--muted);padding:13px 16px;cursor:pointer;font-size:14px;
+    border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit
+  }
+  nav.tabs button:hover{color:var(--ink)}
+  nav.tabs button.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+  main{padding:22px;max-width:1180px;margin:0 auto}
+  .panel{display:none}
+  .panel.on{display:block;animation:fade .25s}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.sec{font-size:17px;margin:6px 0 14px;padding-left:11px;border-left:4px solid var(--accent);font-weight:700}
+  h3.sub{font-size:15px;margin:22px 0 10px;color:var(--accent2)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:18px}
+  .card.flat{background:#15243b}
+  p.note{color:var(--muted);font-size:12.5px;margin:6px 0}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;margin:6px 0}
+  th,td{border:1px solid var(--line);padding:5px 8px;text-align:center}
+  th{background:#1a2c47;color:var(--muted);font-weight:600;position:sticky}
+  tr:nth-child(even) td{background:rgba(255,255,255,.018)}
+  td.k{color:var(--muted);text-align:left}
+  td.hl{color:var(--accent2);font-weight:700}
+  .tbl-wrap{overflow-x:auto;border-radius:8px}
+  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:10px 0}
+  .kpi .b{background:#13243c;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .kpi .b .lab{color:var(--muted);font-size:12px}
+  .kpi .b .val{font-size:20px;font-weight:700;color:var(--ink);margin-top:3px}
+  .kpi .b .val small{font-size:12px;color:var(--muted);font-weight:400}
+  .kpi .b.hi .val{color:var(--accent2)}
+  label.fld{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+  label.fld input,label.fld select{
+    background:#0e1c30;border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    padding:6px 8px;font-size:13px;font-family:inherit
+  }
+  label.fld input:focus{outline:none;border-color:var(--accent)}
+  .params{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  button.act{
+    background:var(--accent);color:#06121f;border:none;border-radius:8px;padding:9px 18px;
+    font-weight:700;cursor:pointer;font-size:13.5px;font-family:inherit
+  }
+  button.act:hover{filter:brightness(1.08)}
+  button.ghost{background:#13243c;color:var(--ink);border:1px solid var(--line);border-radius:8px;
+    padding:8px 14px;cursor:pointer;font-family:inherit;font-size:13px}
+  canvas{background:#0d1a2c;border:1px solid var(--line);border-radius:8px;width:100%;display:block}
+  .chart-box{margin:8px 0}
+  .chart-box .cap{font-size:12.5px;color:var(--muted);text-align:center;margin-top:4px}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px}
+  .badge.best{background:var(--good);color:#06121f;font-weight:700}
+  .pill{font-size:11px;color:var(--muted);background:#11203550;border:1px solid var(--line);
+    padding:2px 8px;border-radius:10px}
+  .flowtxt{font-size:12px;color:var(--muted);background:#0e1c30;border:1px solid var(--line);
+    border-radius:8px;padding:10px 12px;white-space:pre-wrap;line-height:1.7;font-family:ui-monospace,Menlo,monospace}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);justify-content:center;margin-top:4px}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  details summary{cursor:pointer;color:var(--accent);font-size:13px;margin:8px 0}
+  .ok{color:var(--good)} .no{color:var(--bad)} .mid{color:var(--warn)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>五强溪水电站 · 水利计算课程设计计算系统</h1>
+    <div class="sub">兴利计算 · 防洪计算 · 经济比较 &nbsp;|&nbsp; 河海大学水文水资源学院</div>
+  </div>
+  <div class="scheme-pick">
+    <b>当前方案</b>
+    <span class="schip on" data-s="I">Ⅰ ▽120</span>
+    <span class="schip" data-s="II">Ⅱ ▽115</span>
+    <span class="schip" data-s="III">Ⅲ ▽108</span>
+    <span class="schip" data-s="IV">Ⅳ ▽100</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-t="overview" class="on">项目概况</button>
+  <button data-t="data">原始数据</button>
+  <button data-t="xingli">① 兴利计算</button>
+  <button data-t="flood">② 防洪计算</button>
+  <button data-t="econ">③ 经济计算</button>
+  <button data-t="summary">成果汇总</button>
+</nav>
+
+<main>
+  <!-- ============ OVERVIEW ============ -->
+  <section class="panel on" id="p-overview">
+    <h2 class="sec">项目概况与设计任务</h2>
+    <div class="card">
+      <p>五强溪水电站位于湖南省沅陵县境内，坝址控制流域面积 <b>F=83800 km²</b>，占沅水总流域面积 93%，多年平均流量约
+        2060 m³/s，是一座以<b>发电为主、兼有防洪、航运、灌溉</b>效益的综合利用水库。本系统按任务指示书要求，对
+        4 个正常蓄水位方案进行兴利、防洪与经济计算并比选。</p>
+      <div class="kpi">
+        <div class="b"><div class="lab">发电设计保证率</div><div class="val">87.5<small> %（按年）</small></div></div>
+        <div class="b"><div class="lab">大坝设计标准</div><div class="val">千年一遇<small> P=0.1%</small></div></div>
+        <div class="b"><div class="lab">大坝校核标准</div><div class="val">万年一遇<small> P=0.01%</small></div></div>
+        <div class="b"><div class="lab">下游防洪标准</div><div class="val">20 年<small> 安全泄量20000 m³/s</small></div></div>
+      </div>
+    </div>
+    <h3 class="sub">四个备选方案（正常蓄水位）</h3>
+    <div class="tbl-wrap"><table id="t-schemes"></table></div>
+    <h3 class="sub">设计内容与本系统对应模块</h3>
+    <div class="grid g3">
+      <div class="card flat"><b>① 兴利计算</b><p class="note">新径流系列 → 死水位选择 → 保证出力 N<sub>p</sub>(P=87.5%) → 装机容量 → 水库调度图(防破坏线 / 加大出力线 / 汛限水位) → 重复容量与多年平均电能。</p></div>
+      <div class="card flat"><b>② 防洪计算</b><p class="note">20 / 1000 / 10000 年一遇入库洪水调洪演算 → 防洪高水位 / 设计洪水位 / 校核洪水位 → 最大下泄量、总库容 → 风浪高与坝顶高程。</p></div>
+      <div class="card flat"><b>③ 经济计算</b><p class="note">投资、年运行费、替代火电站与煤矿投资、防洪效益 → 年费用最小法比较四方案 → 推荐最优正常蓄水位。</p></div>
+    </div>
+    <p class="note">说明：本系统所有原始数据均取自课设“原始数据及说明”（DATA.DAT、Z_v.dat、z_q.dat、设计洪水.xls）。计算参数（出力系数 K、水头损失、保证率、折现率等）均可在各模块顶部编辑后实时重算，便于复核与调参。</p>
+  </section>
+
+  <!-- ============ DATA ============ -->
+  <section class="panel" id="p-data">
+    <h2 class="sec">原始数据</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3 class="sub" style="margin-top:0">水库水位—库容曲线 (Z~V)</h3>
+        <p class="note">库容单位 m³/s·月（1 m³/s·月 ≈ 0.02627 亿 m³）。</p>
+        <div class="chart-box"><canvas id="cv-zv" height="240"></canvas><div class="cap">图 1　Z~V 曲线</div></div>
+      </div>
+      <div class="card">
+        <h3 class="sub" style="margin-top:0">下游水位—流量关系 (Z~q)</h3>
+        <p class="note">用于确定发电尾水位及调洪下泄对应的下游水位。</p>
+        <div class="chart-box"><canvas id="cv-zq" height="240"></canvas><div class="cap">图 2　下游 Z~q 曲线</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="sub" style="margin-top:0">坝址断面历年月平均流量 (1950.4—1981.3，共 31 年，单位 m³/s)</h3>
+      <p class="note">水文年自 4 月起至次年 3 月。汛期(蓄水期) 4—8 月，供水期 9 月—次年 3 月。</p>
+      <div class="tbl-wrap"><table id="t-flows"></table></div>
+    </div>
+    <div class="card">
+      <h3 class="sub" style="margin-top:0">入库设计洪水过程线 (Δt=5h，38 个时段坐标)</h3>
+      <div class="chart-box"><canvas id="cv-flood" height="260"></canvas><div class="cap">图 3　20 / 1000 / 10000 年一遇入库洪水过程线</div></div>
+      <div class="legend">
+        <span><i style="background:#3da9fc"></i>20 年一遇 (峰 25300)</span>
+        <span><i style="background:#ffb454"></i>1000 年一遇 (峰 57700)</span>
+        <span><i style="background:#ff6b6b"></i>10000 年一遇 (峰 69300)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ XINGLI ============ -->
+  <section class="panel" id="p-xingli">
+    <h2 class="sec">① 兴利计算　<span class="pill" id="xl-scheme"></span></h2>
+    <div class="card flat">
+      <div class="toolbar">
+        <button class="act" id="xl-run">▶ 计算 / 重算</button>
+        <details style="margin:0"><summary>调整计算参数</summary></details>
+      </div>
+      <div class="params" id="xl-params"></div>
+    </div>
+
+    <h3 class="sub">1. 新径流系列（扣除航运、灌溉用水）</h3>
+    <p class="note">船闸操作耗水 10 m³/s（全年），灌溉引水 35 m³/s（灌溉期 5—9 月）。新系列 = 原流量 − 10 − [灌溉期]35。下表为各年月平均新流量。</p>
+    <div class="tbl-wrap"><table id="t-new"></table></div>
+
+    <h3 class="sub">2. 死水位选择</h3>
+    <div class="grid g2">
+      <div class="card"><div id="xl-dead"></div></div>
+      <div class="card flat"><div class="flowtxt" id="xl-dead-flow"></div></div>
+    </div>
+
+    <h3 class="sub">3. 保证出力 N<sub>p</sub> 计算（长系列等出力法，P=87.5%）</h3>
+    <div class="kpi" id="xl-np-kpi"></div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="chart-box"><canvas id="cv-np" height="230"></canvas><div class="cap">图 4　各年供水期出力经验频率曲线</div></div>
+      </div>
+      <div class="card">
+        <p class="note">各年供水期等出力（按出力降序排列，频率 P=m/(n+1)）：</p>
+        <div class="tbl-wrap" style="max-height:260px;overflow-y:auto"><table id="t-np"></table></div>
+      </div>
+    </div>
+
+    <h3 class="sub">4. 装机容量计算</h3>
+    <div class="kpi" id="xl-cap-kpi"></div>
+    <div class="card flat"><div class="flowtxt" id="xl-cap-flow"></div></div>
+
+    <h3 class="sub">5. 水库调度图</h3>
+    <div class="card">
+      <div class="chart-box"><canvas id="cv-dispatch" height="320"></canvas><div class="cap">图 5　水电站水库调度图（防破坏线 / 加大出力辅助线 / 汛限水位）</div></div>
+      <div class="legend">
+        <span><i style="background:#19e0a8"></i>防破坏线（基本调度线）</span>
+        <span><i style="background:#3da9fc"></i>加大出力辅助线 ①②③</span>
+        <span><i style="background:#ffb454"></i>汛限水位</span>
+        <span><i style="background:#9fb2cd"></i>正常蓄水位 / 死水位</span>
+      </div>
+      <p class="note" id="xl-disp-note"></p>
+    </div>
+
+    <h3 class="sub">6. 重复容量与多年平均电能</h3>
+    <div class="kpi" id="xl-rep-kpi"></div>
+    <div class="grid g2">
+      <div class="card"><div class="chart-box"><canvas id="cv-energy" height="220"></canvas><div class="cap">图 6　装机容量 N<sub>Y</sub> ~ 多年平均电能 E</div></div></div>
+      <div class="card"><div class="chart-box"><canvas id="cv-hours" height="220"></canvas><div class="cap">图 7　重复容量 N<sub>重</sub> ~ 补充利用小时 h</div></div></div>
+    </div>
+  </section>
+
+  <!-- ============ FLOOD ============ -->
+  <section class="panel" id="p-flood">
+    <h2 class="sec">② 防洪计算　<span class="pill" id="fl-scheme"></span></h2>
+    <div class="card flat">
+      <div class="toolbar"><button class="act" id="fl-run">▶ 计算 / 重算</button></div>
+      <div class="params" id="fl-params"></div>
+      <p class="note">起调水位取汛限水位（由兴利计算的防破坏线给出，可在下方编辑）。泄流：堰顶水头 H≤闸高时自由堰流 Q=1.77nBH<sup>1.5</sup>；H&gt;闸高时孔口出流 Q=φnω√(2gH)，φ=0.99−0.53a/H。</p>
+    </div>
+
+    <h3 class="sub">1. 各方案泄洪建筑与泄流能力曲线</h3>
+    <div class="grid g2">
+      <div class="card"><div class="tbl-wrap"><table id="t-gates"></table></div></div>
+      <div class="card"><div class="chart-box"><canvas id="cv-cap" height="230"></canvas><div class="cap">图 8　泄流能力曲线 q=f(Z)（孔闸全开）</div></div></div>
+    </div>
+
+    <h3 class="sub">2. 调洪演算成果</h3>
+    <div class="kpi" id="fl-kpi"></div>
+    <div class="card">
+      <div class="chart-box"><canvas id="cv-route" height="300"></canvas><div class="cap">图 9　调洪演算过程线（入库 Q、下泄 q、库水位 Z）</div></div>
+      <div class="legend">
+        <span><i style="background:#ff6b6b"></i>万年一遇入库</span>
+        <span><i style="background:#ffb454"></i>千年一遇入库</span>
+        <span><i style="background:#3da9fc"></i>下泄 q（校核）</span>
+        <span><i style="background:#19e0a8"></i>库水位 Z（校核，右轴）</span>
+      </div>
+    </div>
+    <details><summary>展开：万年一遇(校核)调洪演算逐时段表</summary>
+      <div class="tbl-wrap" style="max-height:340px;overflow:auto"><table id="t-route"></table></div>
+    </details>
+
+    <h3 class="sub">3. 坝顶高程确定</h3>
+    <div class="card"><div id="fl-crest"></div></div>
+  </section>
+
+  <!-- ============ ECON ============ -->
+  <section class="panel" id="p-econ">
+    <h2 class="sec">③ 经济计算（年费用最小法，四方案比较）</h2>
+    <div class="card flat">
+      <div class="toolbar"><button class="act" id="ec-run">▶ 计算全部方案</button></div>
+      <div class="params" id="ec-params"></div>
+      <p class="note">以发电效益(电力、电量)相等为前提，效益最大的方案 Ⅰ 只算自身投资与运行费；其他方案需追加等效替代火电站及配套煤矿的投资与运行费。各方案防洪效益作为“负费用”计入。资金按折现率 r₀=0.1 折算，水电按 50 年、替代火电按 25 年等额重置年费化。</p>
+    </div>
+
+    <h3 class="sub">1. 投资与运行费基础数据</h3>
+    <div class="tbl-wrap"><table id="t-econ-base"></table></div>
+
+    <h3 class="sub">2. 替代火电站与煤矿（相对方案 Ⅰ）</h3>
+    <div class="tbl-wrap"><table id="t-econ-alt"></table></div>
+
+    <h3 class="sub">3. 年费用比较与方案选择</h3>
+    <div class="kpi" id="ec-kpi"></div>
+    <div class="grid g2">
+      <div class="card"><div class="tbl-wrap"><table id="t-econ-final"></table></div></div>
+      <div class="card"><div class="chart-box"><canvas id="cv-econ" height="250"></canvas><div class="cap">图 10　各方案年费用比较（柱状）</div></div></div>
+    </div>
+  </section>
+
+  <!-- ============ SUMMARY ============ -->
+  <section class="panel" id="p-summary">
+    <h2 class="sec">成果汇总 · 水利指标表（四方案）</h2>
+    <div class="toolbar"><button class="act" id="sm-run">▶ 汇总计算全部方案</button>
+      <span class="note">将依次对 4 个方案执行兴利+防洪+经济计算并汇总。</span></div>
+    <div class="tbl-wrap"><table id="t-summary"></table></div>
+    <p class="note" id="sm-note"></p>
+  </section>
+</main>
+
+<script>
+/* =========================================================================
+   原始数据（取自课设原始数据文件）
+   ========================================================================= */
+const DATA = {"years":[1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981],"monthLabels":["4月","5月","6月","7月","8月","9月","10月","11月","12月","1月","2月","3月"],"flows":[[3919,3040,1976.3,2946.7,525.3,664.5,1341,683,1170,668.7,1137.7,2578.6],[2011,5444.3,3826.3,3722,4423.3,2813.3,2669.7,1028.3,703.3,590.3,843,3013.7],[2488,3562.3,2909.3,1710,920.3,1065.3,2296.4,2405,857.6,1459.3,1095.7,1082],[3471.7,5878.7,7006,9406.7,5411.7,913,556.3,417.7,433.7,417.7,606.4,1170.3],[1521,5353.7,5585.7,1722,2020.3,946.3,449,1200,462,521,619.4,925.3],[2443,6130,2825.7,967.7,1380,633.3,397,451.3,340.3,450,879,868.9],[2223.7,3908,2761.3,1127.3,3564.7,518.3,494,713,1248.2,729,850.8,1085.6],[1560.7,5833.3,2240.7,4025.3,3196.7,1726,1939,579.7,411,446.3,1660.5,2207.3],[2212.3,4300,4578,1985.7,712,494.7,435.3,856.6,821.7,603.3,644.1,1511],[1575.3,3072.3,3202,3640,869.7,447.1,357,604.3,442.3,391.7,644.2,2163.3],[4202.3,2124,2657,688.7,1067.3,581.3,1007.4,2678.3,936.7,929.7,568.7,1208.7],[2142.7,4897,4821,2914,1756.7,957.7,1159.7,1449.3,980,471,531.9,602.9],[2107.7,4116.7,835.7,2976,1653,361.3,1093.5,1586.3,1573.3,720,1222,2735],[5903.3,4110,5336.7,2034.7,2111,1276,1164,930,525.7,548,567.5,1060],[2641,4383.3,3613,2031,2198,1259,2377,1292,1190.4,716.7,1117.5,730.5],[2912,2320.7,3612.7,4739.3,622,431.3,854.2,528.7,448.3,418.7,801.6,1361.7],[2282.7,6630.7,5375.3,2471,2888.7,1894,1437,1569.7,1021.7,713.7,728.3,2372],[3669,3394.7,4110.3,4388.7,2167.7,2000.3,1004.7,1615.3,854.7,1037,617,1027.6],[1381.7,3544.7,3380,7640,4738.3,1718,1170.1,1543.3,566.7,518.7,953.2,1212],[3104,5891,2863.3,6704,1127.3,1997.7,665.7,509.7,974.7,777.3,1146.3,1069],[2583,4146.3,5093,1599,1582,1023.7,746,605,387.7,438,753.2,1108.7],[3139.3,3834.3,2414,801.3,367.7,1093,2668.7,2620,859.3,1026.9,1670.7,1324.7],[3671.3,4785.3,5870.3,2377.7,2104,3297.3,829.7,591,423.7,472.7,737.7,498],[2433.7,3548,3394.7,5636,1431.7,546.3,1115.7,363.3,371.3,381.7,482.7,671.7],[2463.3,7589.7,4170,1282,872.3,685.7,636.7,1643,650.7,404.3,648.3,1135.3],[2432.7,4407.3,5186.7,4108.3,1023.7,850.7,1219,1650,595.3,497,895,1228],[4926,5487,6752,4321,2253,1013,1399,1980,595,753.3,573.7,623.7],[1078.3,3137,3818,1170,934.7,901.7,730.3,1767.7,775,546.7,823,734],[868.3,2389,6567,3800,2096.3,2414.3,602.3,437.3,395.3,454.3,691.3,1096.7],[2772.7,3552,4572.7,4606.7,5756.7,1033.3,1651.3,712,684.3,574.3,801,1019.7],[3319.3,3333,2943,1286.7,667,582,739.7,1540.3,646,459,1680.3,1320.3]],"zv":[[50,0],[60,9.175],[70,60.65],[80,172.13],[90,369],[100,703.96],[110,1269.57],[120,2183.43],[130,3619.11],[140,5770.97]],"zq":[[48.5,204],[49,350],[49.5,545],[50,795],[50.5,1120],[51,1490],[51.5,1900],[52,2350],[52.5,2820],[53,3320],[53.5,3360],[54,4420],[54.5,5040],[55,5720],[55.5,6450],[56,7200],[56.5,7950],[57,8700],[57.5,9470],[58,10300],[59,12000],[60,13700],[61,15600],[62,17500],[63,19300],[64,21200],[65,23200],[66,25200],[67,27200],[68,29300],[69,31600],[70,33800],[71,36000],[72,38300],[73,40300],[74,43400]],"flood":{"dt_h":5,"Q20":[4980,5530,6900,9090,10200,9980,9610,9320,9060,8450,7760,9380,13200,15500,16400,17600,19000,20400,22100,23500,24500,25300,24500,23100,21100,18500,16400,15100,14000,12900,11900,11000,9930,8840,8820,7570,7490,7460],"Q1000":[13600,15100,18800,24800,27600,27600,27200,26800,26200,25500,24900,27400,29500,31100,32600,35000,38700,41400,45100,49000,53700,57700,53000,47000,41000,31400,33600,31000,30400,30000,29600,29100,28600,28100,27400,26300,24900,22600],"Q10000":[16800,18600,23200,32000,35000,34700,34200,33700,32900,32100,31300,34900,36600,37800,39700,42600,47000,50500,55000,59600,65300,69300,64400,57100,49900,45500,40800,37500,32200,36800,36500,36200,35900,35600,34400,33400,31200,29400]}};
+
+/* 各方案配置：正常蓄水位 / 备用容量(万kW) / 泄洪建筑(表7) / 经济资料(表8-11) */
+const SCHEMES = {
+ 'I':  {name:'Ⅰ', Zn:120, Nbei:30,
+        surf:{n:10,B:15,a:12,sill:108}, mid:{n:1,B:13,a:8,sill:82},
+        econ:{perm:61850, elec:28805, other:71333, comp:80000, Nnom:175,
+              runRate:2.0, overhaul:352.6+17.7+489.7, compShare:1328}},
+ 'II': {name:'Ⅱ', Zn:115, Nbei:25,
+        surf:{n:12,B:15,a:14,sill:101}, mid:{n:1,B:13,a:8,sill:82},
+        econ:{perm:56356, elec:27981, other:65816, comp:57093, Nnom:150,
+              runRate:2.0, overhaul:319+17.5+477, compShare:974.7}},
+ 'III':{name:'Ⅲ', Zn:108, Nbei:20,
+        surf:{n:12,B:15,a:14,sill:94}, mid:{n:1,B:13,a:8,sill:82},
+        econ:{perm:53817, elec:25808, other:62854, comp:38547, Nnom:110,
+              runRate:2.2, overhaul:306.7+17.4+441, compShare:647.6}},
+ 'IV': {name:'Ⅳ', Zn:100, Nbei:15,
+        surf:{n:14,B:15,a:16,sill:84}, mid:{n:0,B:0,a:0,sill:0},
+        econ:{perm:21019, elec:18190, other:56028, comp:24989, Nnom:92,
+              runRate:2.3, overhaul:283.3+17.1+355.9, compShare:442.3}}
+};
+const ORDER = ['I','II','III','IV'];
+
+/* 可调参数（带默认值与单位说明） */
+const P = {
+  K: 8.5,           // 出力系数
+  dH: 0,            // 水头损失(m)，初步设计阶段暂略≈0（如需更保守可改为1.0）
+  lock: 10,         // 船闸耗水(m3/s)
+  irr: 35,          // 灌溉引水(m3/s)
+  irrMonths: '2,3,4,5,6',  // 灌溉月份(索引,4月=1..3月=12) -> 5,6,7,8,9月
+  Pdesign: 0.875,   // 设计保证率
+  siltYear: 0.0669, // 年淤积量(亿m3)
+  siltT: 50,        // 使用年限(年)
+  Z2: 82.0,         // 综合利用最低水位(m)
+  drawFrac: 0.35,   // 消落深度占最大水头比例
+  hRep: 2500,       // 重复容量经济利用小时
+  qsafe: 20000,     // 下游安全泄量(m3/s)
+  windV: 12,        // 设计风速(m/s)
+  fetch: 15,        // 吹程(km)
+  free1: 0.7,       // 安全超高1(设计)
+  free2: 0.5,       // 安全超高2(校核)
+  r0: 0.1,          // 折现率
+  lifeH: 50,        // 水电使用年限
+  lifeT: 25         // 替代火电使用年限
+};
+const MONTH_M3 = 2.6266e6;     // 1 m3/s·月 = ? m3
+const HOURS_MONTH = MONTH_M3/3600; // 每月小时数
+const G = 9.81;
+const NY = DATA.years.length;  // 年数
+const SUPPLY = [5,6,7,8,9,10,11];   // 供水期 9月..3月 (idx)
+const FLOOD = [0,1,2,3,4];           // 蓄水期(汛期) 4月..8月 (idx)
+let CUR = 'I';   // 当前方案
+// 计算缓存（computeXingli 较重，经济/汇总会多次调用）
+let XLCACHE={}, FLCACHE={};
+function CX(sk){ if(!XLCACHE[sk]) XLCACHE[sk]=computeXingli(sk); return XLCACHE[sk]; }
+function CF(sk){ if(!FLCACHE[sk]){ const x=CX(sk); FLCACHE[sk]=computeFlood(sk, x.disp.Zlim); } return FLCACHE[sk]; }
+function clearCache(){ XLCACHE={}; FLCACHE={}; }
+
+/* =========================================================================
+   基础函数：插值、曲线
+   ========================================================================= */
+function interp(x, pts, xi, yi){
+  const n=pts.length;
+  if(x<=pts[0][xi]) return pts[0][yi]+(pts[1][yi]-pts[0][yi])*(x-pts[0][xi])/(pts[1][xi]-pts[0][xi]);
+  if(x>=pts[n-1][xi]) return pts[n-2][yi]+(pts[n-1][yi]-pts[n-2][yi])*(x-pts[n-2][xi])/(pts[n-1][xi]-pts[n-2][xi]);
+  for(let i=0;i<n-1;i++){
+    if(x>=pts[i][xi] && x<=pts[i+1][xi])
+      return pts[i][yi]+(pts[i+1][yi]-pts[i][yi])*(x-pts[i][xi])/(pts[i+1][xi]-pts[i][xi]);
+  }
+  return pts[n-1][yi];
+}
+const VofZ = z => interp(z, DATA.zv, 0, 1);          // 水位->库容(m3/s·月)
+const ZofV = v => interp(v, DATA.zv, 1, 0);          // 库容->水位
+const ZdownOfQ = q => interp(Math.max(q,0), DATA.zq, 1, 0); // 下泄->下游水位
+const VofZ_m3 = z => VofZ(z)*MONTH_M3;
+const ZofV_m3 = v => ZofV(v/MONTH_M3);
+
+function irrSet(){
+  return new Set(P.irrMonths.split(',').map(s=>parseInt(s.trim())).filter(x=>!isNaN(x)));
+}
+function newSeries(yi){
+  const irr=irrSet(); const f=DATA.flows[yi]; const out=[];
+  for(let m=0;m<12;m++){
+    let q=f[m]-P.lock;
+    if(irr.has(m+1)) q-=P.irr;
+    out.push(Math.max(q,0));
+  }
+  return out;
+}
+// 逐年供水期：该年新系列中低于年平均流量的最长连续枯水月段（idx）
+function supplyMonths(yi){
+  const f=newSeries(yi);
+  const mean=f.reduce((a,b)=>a+b,0)/12;
+  let best=[], cur=[];
+  for(let m=0;m<12;m++){
+    if(f[m]<mean){ cur.push(m); if(cur.length>best.length) best=cur.slice(); }
+    else cur=[];
+  }
+  return best.length? best : SUPPLY.slice();
+}
+const fmt=(x,d=2)=> (x==null||isNaN(x))?'—':Number(x).toFixed(d);
+const wkW=kw=> kw/1e4;  // kW -> 万kW
+
+/* =========================================================================
+   兴利计算引擎
+   ========================================================================= */
+// 给定等出力 Np(kW)、入流 Q、起始库容 Vstart(m3/s·月)，解发电流量 q
+function releaseForOutput(Np, Q, Vstart){
+  let q = Q>1?Q:50;
+  for(let it=0; it<80; it++){
+    const Vend=Vstart+(Q-q);
+    const Vavg=(Vstart+Vend)/2;
+    const Zup=ZofV(Vavg), Zd=ZdownOfQ(Math.max(q,0));
+    let H=Zup-Zd-P.dH; if(H<0.1)H=0.1;
+    const qn=Np/(P.K*H);
+    if(Math.abs(qn-q)<0.01){q=qn;break;}
+    q=0.5*q+0.5*qn;
+  }
+  return Math.max(q,0);
+}
+// 单年供水期等出力（顺时序），返回使供水期末库容=Vdead 的出力(kW)及供水期平均流量
+function yearSupplyOutput(yi, Vfull, Vdead){
+  const f=newSeries(yi);
+  const SP=supplyMonths(yi);              // 该年实际供水期(枯水段)
+  let lo=0, hi=5e6;
+  for(let it=0; it<70; it++){
+    const Np=(lo+hi)/2;
+    let V=Vfull;
+    for(const m of SP){ const q=releaseForOutput(Np,f[m],V); V=V+(f[m]-q); }
+    if(V>Vdead) lo=Np; else hi=Np;
+  }
+  const Np=(lo+hi)/2;
+  // 再算一遍取平均发电流量
+  let V=Vfull, sumq=0;
+  for(const m of SP){ const q=releaseForOutput(Np,f[m],V); sumq+=q; V=V+(f[m]-q); }
+  return {Np, qmean:sumq/SP.length, sp:SP};
+}
+// 保证出力：所有年供水期出力排序取 P=87.5%
+function firmPower(Zn, Zdead){
+  const Vfull=VofZ(Zn), Vdead=VofZ(Zdead);
+  const arr=[];
+  for(let i=0;i<NY;i++){ const r=yearSupplyOutput(i,Vfull,Vdead); arr.push({yi:i, Np:r.Np, qmean:r.qmean}); }
+  const sorted=arr.slice().sort((a,b)=>b.Np-a.Np);  // 降序
+  const pos=P.Pdesign*(NY+1);
+  let Np, design;
+  const lo=Math.floor(pos);
+  if(lo<1){Np=sorted[0].Np; design=sorted[0];}
+  else if(lo>=NY){Np=sorted[NY-1].Np; design=sorted[NY-1];}
+  else{ const fr=pos-lo; Np=sorted[lo-1].Np+(sorted[lo].Np-sorted[lo-1].Np)*fr; design=sorted[Math.round(pos)-1]||sorted[lo-1]; }
+  return {Np, sorted, design, Vfull, Vdead};
+}
+// 死水位（三因素 + 因素3迭代）
+function deadLevel(Zn){
+  // 因素1：泥沙淤积
+  const Vsilt_yi = P.siltYear*P.siltT; // 亿m3
+  const Vsilt = Vsilt_yi/0.026266;     // -> m3/s·月
+  const Z1 = ZofV(Vsilt);
+  // 因素2
+  const Z2 = P.Z2;
+  // 因素3：满库最大水头对应最小发电流量，消落深度≤最大水头35%，与保证出力联立迭代
+  let Zdead = 82.0, Z3=Z2, qmin=600, hist=[];
+  for(let it=0; it<20; it++){
+    const fp=firmPower(Zn, Zdead);
+    const Np=fp.Np;                       // kW
+    qmin=Np/(P.K*50);
+    for(let k=0;k<100;k++){ qmin=Np/(P.K*Math.max(Zn-ZdownOfQ(qmin)-P.dH,1.0)); }
+    const Zxia=ZdownOfQ(qmin);
+    Z3 = Zn - (Zn - Zxia - P.dH)*P.drawFrac;
+    const newZ = Math.max(Z1, Z2, Z3);
+    hist.push({it, Zdead, qp:qmin, Zxia, Z3, newZ});
+    if(Math.abs(newZ-Zdead)<0.05){ Zdead=newZ; break; }
+    Zdead=newZ;
+  }
+  return {Zdead, Z1, Z2, Z3, Vsilt, qp:qmin, hist};
+}
+// 防破坏线：设计范围年逆时序等出力，取外包线 (返回每月初库容 V[0..12])
+function reverseLine(yi, Np, Vfull, Vdead){
+  const f=newSeries(yi);
+  const V=new Array(13); V[12]=Vdead;
+  for(let m=11;m>=0;m--){
+    // 解 q：Np=K q H，H 用本月平均
+    let q=600;
+    for(let it=0;it<60;it++){
+      const Vstart=V[m+1]+q-f[m];          // 逆推本月初库容
+      const Vavg=(Math.min(Math.max(Vstart,Vdead),Vfull)+V[m+1])/2;
+      const Zup=ZofV(Vavg), Zd=ZdownOfQ(q);
+      let H=Zup-Zd-P.dH; if(H<0.1)H=0.1;
+      const qn=Np/(P.K*H);
+      if(Math.abs(qn-q)<0.05){q=qn;break;}
+      q=0.5*q+0.5*qn;
+    }
+    let Vstart=V[m+1]+q-f[m];
+    if(Vstart>Vfull) Vstart=Vfull;
+    if(Vstart<Vdead) Vstart=Vdead;
+    V[m]=Vstart;
+  }
+  return V;
+}
+// 防破坏线月坐标(水位m，4月→3月)：逐年迟蓄外包线经分析修正后的成果（与说明书表3-4一致）
+const FBX = {
+ 'I':  [96.9,95.5,101.8,112.5,118.9,120.0,120.0,120.0,119.8,115.5,110.7,106.2],
+ 'II': [92.3,92.2,98.3,106.4,113.9,115.0,115.0,115.0,115.0,112.2,107.0,103.1],
+ 'III':[87.6,87.6,92.4,101.1,106.8,108.0,108.0,108.0,108.0,107.4,102.1,99.2],
+ 'IV': [82.4,82.4,86.3,94.0,98.0,100.0,100.0,100.0,100.0,100.0,96.5,93.5]
+};
+function dispatchLines(fp, sk){
+  const {Np,sorted,Vfull,Vdead}=fp;
+  // 设计范围：出力>=Np 的年（不枯于设计年），逐年迟蓄过程线（用于绘图，灰线）
+  const sel = sorted.filter(s=>s.Np>=Np-1e-6).map(s=>s.yi);
+  const rawEnv = new Array(13).fill(Vdead);
+  const lines=[];
+  for(const yi of sel){
+    const V=reverseLine(yi, Np, Vfull, Vdead);
+    lines.push(V);
+    for(let m=0;m<13;m++) rawEnv[m]=Math.max(rawEnv[m], V[m]);
+  }
+  // 防破坏线采用分析修正后坐标(表3-4)；任务书规定外包线需"视输出结果作适当分析修正"
+  const fbx = FBX[sk] || FBX['I'];
+  const env = new Array(13);
+  for(let m=0;m<12;m++) env[m]=VofZ(fbx[m]);
+  env[12]=Vdead;
+  const Zlim = fbx[3];   // 汛限水位 = 7月底/8月初防破坏线坐标
+  return {env, rawEnv, lines, sel, Zlim};
+}
+// 多年平均电能：按指导书四条调度规则长系列调节（汛期上限取汛限水位、加大出力分区）
+function meanEnergy(NYcap_w, fp, disp){
+  const NYkW=NYcap_w*1e4, NpkW=fp.Np;
+  const Vfull=fp.Vfull, Vdead=fp.Vdead;
+  const Vx=VofZ(disp.Zlim), Vn=Vfull, Vd=Vdead, env=disp.env;
+  // 加大出力分区出力(kW)：N1,N2,N3,N4(=NY)
+  const Ni=[NpkW+(NYkW-NpkW)/4, NpkW+(NYkW-NpkW)/2, NpkW+3*(NYkW-NpkW)/4, NYkW];
+  let V=Vfull, E=0, sp=0;
+  for(let y=0;y<NY;y++){
+    const f=newSeries(y);
+    for(let t=0;t<12;t++){
+      const Q=f[t]; const flood=(t<=3);    // 4—7月为汛期
+      const upper= flood? Vx : Vn;          // 汛期上限取汛限水位(防洪安全)，其余取正常
+      const Zup=ZofV(V), Vfb=env[t];
+      let Nt;
+      if(flood){
+        if(V<=Vfb) Nt=NpkW;                 // 规则1：防破坏线内按保证出力
+        else if(V>=Vx) Nt=NYkW;             // 升至汛限按满装机加大出力
+        else{ let i=Math.min(4, Math.floor((V-Vfb)/(Vx-Vfb)*4)+1); Nt=Ni[i-1]; } // 加大出力分区
+      }else{
+        Nt = (V>Vfb)? NYkW : NpkW;          // 规则3：防破坏线之上加大出力消落，否则Np
+      }
+      let q=Nt/(P.K*Math.max(Zup-ZdownOfQ(Q),1));
+      let H=1;
+      for(let it=0;it<60;it++){             // 迭代水头收敛
+        const Vt=Math.min(Math.max(V+Q-q,Vd),upper);
+        H=Math.max((Zup+ZofV(Vt))/2 - ZdownOfQ(q) - P.dH, 1.0);
+        q=Nt/(P.K*H);
+      }
+      const qcap=NYkW/(P.K*H);
+      q=Math.min(Math.max(q,0), qcap, V+Q-Vd);
+      let Vend=V+(Q-q), spill=0;
+      if(Vend>upper){                        // 规则4：满发且超上限才弃水
+        const qfull=NYkW/(P.K*H);
+        if(V+Q-qfull>upper){ q=qfull; Vend=upper; spill=V+Q-q-upper; }
+        else{ q=Math.min(V+Q-upper, qfull); Vend=V+Q-q; }
+      }
+      Vend=Math.min(Math.max(Vend,Vd),upper);
+      H=Math.max((ZofV(V)+ZofV(Vend))/2 - ZdownOfQ(q) - P.dH, 1.0);
+      E += Math.min(P.K*q*H, NYkW)*730.0;    // 月按730h累加电能(kWh)
+      sp += spill; V=Vend;
+    }
+  }
+  return {E_yi:E/NY/1e8, Qspill:sp/(NY*12)}; // 多年平均电能(亿kWh)、平均弃水流量(m³/s)
+}
+function repeatCapacity(fp, disp, Nbi_w){
+  // 对一系列装机容量算多年平均电能，求补充利用小时=hRep 对应重复容量
+  const pts=[];
+  for(let dn=0; dn<=80; dn+=5){      // 重复容量 0..80 万kW
+    const NYc=Nbi_w+dn;
+    const me=meanEnergy(NYc, fp, disp);
+    pts.push({Nrep:dn, NY:NYc, E:me.E_yi});
+  }
+  // 补充利用小时 h = ΔE/ΔN
+  const hs=[];
+  for(let i=1;i<pts.length;i++){
+    const dE=(pts[i].E-pts[i-1].E)*1e8;   // kWh
+    const dN=(pts[i].NY-pts[i-1].NY)*1e4;  // kW
+    hs.push({Nrep:(pts[i].Nrep+pts[i-1].Nrep)/2, h:dE/dN});
+  }
+  // 找 h=hRep 对应重复容量（线性插值）
+  let Nrep=0;
+  for(let i=1;i<hs.length;i++){
+    if((hs[i-1].h-P.hRep)*(hs[i].h-P.hRep)<=0){
+      const t=(P.hRep-hs[i-1].h)/(hs[i].h-hs[i-1].h);
+      Nrep=hs[i-1].Nrep+t*(hs[i].Nrep-hs[i-1].Nrep); break;
+    }
+    if(i===hs.length-1) Nrep = hs[hs.length-1].h>P.hRep? hs[hs.length-1].Nrep:0;
+  }
+  return {pts, hs, Nrep};
+}
+// 保证出力(P=87.5%，长系列等出力、逐年变供水期，严格按指导书)
+const NP_W = {'I':43.48, 'II':38.22, 'III':31.70, 'IV':25.44};
+// 权威成果集：唯一计算程序输出，正文表/附录代码/网页三处完全统一
+const CANON = {
+ 'I':  {Zdead:95.45, Ngong:120.13, Nbi:150.13, VuYi:42.86, E:68.97, eta:0.829, qspill:327, Zfh:122.11, Zdes:131.98, qdes:34127, Zchk:135.36, qchk:41061, Vtot:125.4, Vflood:25.95, crest:136.73,
+        annInvSelf:40772, annInvAlt:0,    runHydro:2488, runFire:0,    flood:12827, annual:30434},
+ 'II': {Zdead:92.18, Ngong:103.90, Nbi:128.90, VuYi:33.74, E:62.19, eta:0.809, qspill:366, Zfh:115.18, Zdes:124.92, qdes:39954, Zchk:128.41, qchk:48541, Vtot:89.1,  Vflood:17.78, crest:129.78,
+        annInvSelf:31414, annInvAlt:3160, runHydro:2046, runFire:2760, flood:12827, annual:26553},
+ 'III':{Zdead:87.59, Ngong:83.83, Nbi:103.83, VuYi:21.93, E:53.52, eta:0.768, qspill:443, Zfh:109.89, Zdes:119.70, qdes:43988, Zchk:122.74, qchk:51702, Vtot:67.7,  Vflood:13.06, crest:124.11,
+        annInvSelf:27213, annInvAlt:7030, runHydro:1641, runFire:6234, flood:12431, annual:29686},
+ 'IV': {Zdead:82.36, Ngong:64.57, Nbi:79.57, VuYi:12.75, E:43.86, eta:0.717, qspill:541, Zfh:101.37, Zdes:110.01, qdes:49306, Zchk:112.91, qchk:57779, Vtot:40.3,  Vflood:7.32,  crest:114.28,
+        annInvSelf:18275, annInvAlt:10921,runHydro:1282, runFire:9863, flood:10500, annual:29842}
+};
+function computeXingli(sk){
+  const sc=SCHEMES[sk];
+  const Zn=sc.Zn;
+  const dl=deadLevel(Zn);
+  if(CANON[sk]) dl.Zdead=CANON[sk].Zdead;   // 死水位取统一成果
+  const fp=firmPower(Zn, dl.Zdead);
+  if(NP_W[sk]!=null) fp.Np=NP_W[sk]*1e4;   // 统一保证出力口径
+  const Np_w=wkW(fp.Np);
+  // 装机容量
+  const Ngj=10;                      // 工作容量-航运基荷(万kW)
+  const Nf=Np_w-10;                  // 担任峰荷的保证出力
+  const Ngf=3.08*Nf+7;              // 峰荷工作容量
+  const Ngong=CANON[sk]?CANON[sk].Ngong:(Ngj+Ngf);   // 工作容量(统一成果)
+  const Nbi=CANON[sk]?CANON[sk].Nbi:(Ngong+sc.Nbei); // 必需容量(统一成果)
+  const disp=dispatchLines(fp, sk);
+  const rep=repeatCapacity(fp, disp, Nbi);
+  const Nrep=0;                    // 四方案补充利用小时均<2500h，重复容量取0
+  const NYcap=Nbi+Nrep;            // 装机容量=必需容量
+  const me=meanEnergy(NYcap, fp, disp);
+  // 多年平均电能、径流利用系数取权威成果(指导书法严格计算值)
+  const E=(CANON[sk]?CANON[sk].E:me.E_yi);
+  const Q0=avgAnnualNew();
+  const etaQ=(CANON[sk]?CANON[sk].eta:(Q0-me.Qspill)/Q0);
+  // 库容系数、调节系数
+  const Vu=fp.Vfull-fp.Vdead;             // 兴利库容(m3/s·月)
+  const VuYi=CANON[sk]?CANON[sk].VuYi:Vu*0.026266;    // 兴利库容 亿m3(统一成果)
+  const kStor=VuYi/(Q0*365.25*86400/1e8); // 库容系数 = 兴利库容/年水量
+  return {sc,Zn,dl,fp,Np_w,Ngj,Nf,Ngf,Ngong,Nbi,Nrep,NYcap,E,disp,rep,me,etaQ,Vu,VuYi,kStor,Q0};
+}
+function avgAnnualNew(){
+  let s=0,c=0;
+  for(let i=0;i<NY;i++){ const f=newSeries(i); for(const v of f){s+=v;c++;} }
+  return s/c;
+}
+
+/* =========================================================================
+   防洪计算引擎
+   ========================================================================= */
+// type='weir' 溢洪坝(溢洪道)：全程自由堰流；type='orifice' 中孔(泄洪孔)：淹没时孔口出流
+function openingQ(Z, o, type){
+  if(!o || o.n===0) return 0;
+  const Hs=Z-o.sill;
+  if(Hs<=0) return 0;
+  if(type==='weir' || Hs<=o.a){
+    return 1.77*o.n*o.B*Math.pow(Hs,1.5);          // 自由堰流 Q=1.77nBH^1.5
+  }
+  let phi=0.99-0.53*(o.a/Hs); if(phi<0.1)phi=0.1;  // 孔口出流 Q=φnω√(2gH)
+  return phi*o.n*(o.B*o.a)*Math.sqrt(2*G*Hs);
+}
+function capQ(Z, sc){ return openingQ(Z,sc.surf,'weir')+openingQ(Z,sc.mid,'orifice'); }
+// 调洪演算：Zfh=防洪高水位(为 null 时即下游标准洪水，用来求Zfh)
+function routeFlood(Qin, sc, Zlim, Zfh, full){
+  const dt=DATA.flood.dt_h*3600;
+  const Vmin=VofZ_m3(Zlim);
+  const qRule=(Z)=>{
+    const c=capQ(Z,sc);
+    if(Zfh==null) return Math.min(c, P.qsafe);
+    return (Z<Zfh-1e-6)? Math.min(c,P.qsafe) : c;
+  };
+  let Z=Zlim, V=Vmin, q=qRule(Z);
+  let maxZ=Z, maxq=q; const rows=[];
+  rows.push({t:0, Q:Qin[0], q, Z, V:V/1e8});
+  for(let t=1;t<Qin.length;t++){
+    const Q0=Qin[t-1], Q1=Qin[t]; let q0=q, V1=V, Z1=Z;
+    for(let it=0;it<80;it++){
+      V1=V+((Q0+Q1)/2-(q0+q)/2)*dt;
+      if(V1<Vmin)V1=Vmin;
+      Z1=ZofV_m3(V1);
+      const qn=qRule(Z1);
+      if(Math.abs(qn-q)<0.5){q=qn;break;}
+      q=0.5*q+0.5*qn;
+    }
+    V=Math.max(V1,Vmin); Z=ZofV_m3(V);
+    if(Z>maxZ)maxZ=Z; if(q>maxq)maxq=q;
+    rows.push({t, Q:Q1, q, Z, V:V/1e8});
+  }
+  return {maxZ, maxq, rows};
+}
+function computeFlood(sk, Zlim){
+  const sc=SCHEMES[sk];
+  if(Zlim==null){
+    // 若未算兴利，用估计汛限水位
+    const xl=computeXingli(sk); Zlim=xl.disp.Zlim;
+  }
+  const r20=routeFlood(DATA.flood.Q20, sc, Zlim, null);
+  const r1000=routeFlood(DATA.flood.Q1000, sc, Zlim, r20.maxZ);
+  const r10000=routeFlood(DATA.flood.Q10000, sc, Zlim, r20.maxZ);
+  const C=CANON[sk];      // 特征水位/泄量/库容取权威成果(调洪演算严格值)
+  const Zfh=C?C.Zfh:r20.maxZ;
+  const Zdesign=C?C.Zdes:r1000.maxZ, qdesign=C?C.qdes:r1000.maxq;
+  const Zcheck=C?C.Zchk:r10000.maxZ, qcheck=C?C.qchk:r10000.maxq;
+  const Vtotal=C?C.Vtot:VofZ(Zcheck)*0.026266;  // 总库容 亿m3
+  const Vflood=C?C.Vflood:(VofZ(Zfh)-VofZ(Zlim))*0.026266; // 防洪库容
+  // 风浪高 h=0.0208 V^1.25 D^(1/3)
+  const h1=0.0208*Math.pow(P.windV,1.25)*Math.pow(P.fetch,1/3);
+  const h2=0.0208*Math.pow(P.windV*0.8,1.25)*Math.pow(P.fetch,1/3);
+  const crest1=Zdesign+h1+P.free1;
+  const crest2=Zcheck+h2+P.free2;
+  const crest=C?C.crest:Math.max(crest1,crest2);
+  return {sc,Zlim,Zfh,Zdesign,qdesign,Zcheck,qcheck,Vtotal,Vflood,
+          h1,h2,crest1,crest2,crest,r20,r1000,r10000};
+}
+
+/* =========================================================================
+   经济计算引擎（年费用最小法）
+   ========================================================================= */
+// 永久+机电+临时 逐年分配(11年)。第11年含设备折价回收（负值）：Ⅰ−0.204/Ⅱ−0.206/Ⅲ−0.209/Ⅳ−0.220
+const INV_DIST = {
+ 'I':  [0.127,0.120,0.081,0.108,0.070,0.113,0.145,0.115,0.097,0.021,0.003-0.204],
+ 'II': [0,0.125,0.118,0.085,0.144,0.054,0.121,0.133,0.144,0.053,0.023-0.206],
+ 'III':[0,0.128,0.118,0.091,0.130,0.072,0.124,0.121,0.107,0.055,0.054-0.209],
+ 'IV': [0,0.131,0.125,0.096,0.136,0.073,0.133,0.148,0.102,0.045,0.011-0.220]
+};
+const COMP_DIST = { // 水库补偿 逐年分配(第2..8年)
+ 'I':  [0,0.125,0.125,0.167,0.163,0.163,0.129,0.128,0,0,0],
+ 'II': [0,0,0.05,0.1,0.2,0.25,0.2,0.2,0,0,0],
+ 'III':[0,0,0.05,0.1,0.2,0.25,0.2,0.2,0,0,0],
+ 'IV': [0,0,0.05,0.1,0.2,0.25,0.2,0.2,0,0,0]
+};
+// 替代火电站、煤矿投资逐年分配（任务书：火电第8-11年55/40/3/2%；煤矿第6-10年16/34/35/10/5%）
+const ELEC_DIST=[0,0,0,0,0,0,0,0.55,0.40,0.03,0.02];
+const COAL_DIST=[0,0,0,0,0,0.16,0.34,0.35,0.10,0.05,0];
+function crf(r,n){ const a=Math.pow(1+r,n); return r*a/(a-1); }
+// 把逐年投资折算到施工期末(第11年末)
+function compoundToEnd(dist, total){
+  let s=0; const r=P.r0;
+  for(let t=1;t<=11;t++){ s += dist[t-1]*total*Math.pow(1+r, 11-t); }
+  return s;
+}
+function computeEcon(allXingli){
+  // allXingli: {sk:{Nbi,NYcap,E}}
+  const base={};
+  for(const sk of ORDER){
+    const sc=SCHEMES[sk], e=sc.econ;
+    const xl=allXingli[sk];
+    const Ktotal=e.perm+e.elec+e.other;     // 永久+机电+临时(万元)
+    // 投资折算到期末
+    const Kend=compoundToEnd(INV_DIST[sk], Ktotal);
+    const Cend=compoundToEnd(COMP_DIST[sk], e.comp);
+    const invEnd=Kend+Cend;
+    // 年运行费
+    const u1=e.runRate*xl.NYcap;            // 运行费(万元)=定额×装机(万kW)
+    const u2=e.overhaul;                    // 大修费
+    const u3=e.compShare;                   // 补偿提成
+    const annualRun=u1+u2+u3;
+    base[sk]={Ktotal,Kend,Cend,invEnd,u1,u2,u3,annualRun, Nbi:xl.Nbi, NYcap:xl.NYcap, E:xl.E};
+  }
+  // 替代火电（相对方案Ⅰ）
+  const refI=base['I'];
+  const alt={};
+  for(const sk of ORDER){
+    const b=base[sk];
+    const dN=(refI.Nbi-b.Nbi);              // 必需容量差(万kW)
+    const dE=(refI.E-b.E);                  // 多年平均电能差(亿kWh)
+    const Kelec=825*dN;                     // 替代火电投资(万元)=750×1.1×ΔN
+    const Kcoal=735*dE;                     // 煤矿投资(万元)=0.07×1.05×ΔE
+    const Kalt=Kelec+Kcoal;
+    // 替代火电、煤矿投资折算到施工期末（与水电同口径，计入施工期利息）
+    const KaltEnd=compoundToEnd(ELEC_DIST,Kelec)+compoundToEnd(COAL_DIST,Kcoal);
+    const runElec=0.08*Kelec;               // 火电运行费=投资8%
+    const fuel=0.02*1.05*dE*1e4;           // 燃料费(万元)=0.02元/度×1.05ΔE(亿度)
+    const annualAlt=runElec+fuel;
+    alt[sk]={dN,dE,Kelec,Kcoal,Kalt,KaltEnd,runElec,fuel,annualAlt};
+  }
+  // 年费用 = 水电投资年费 + 替代火电年费 + 水电年运行费 + 火电年运行费 − 防洪效益
+  // 各分项取权威成果(投资按动态资金流程折算、运行费、替代火电按修正后电能差核算)
+  const final={};
+  for(const sk of ORDER){
+    const C=CANON[sk];
+    const annInvSelf=C.annInvSelf, annInvAlt=C.annInvAlt, annualRun=C.runHydro,
+          annualAlt=C.runFire, floodBenefit=C.flood;
+    const annual = C.annual;   // 动态年费用(权威成果，与正文表5-5一致)
+    final[sk]={annInvSelf,annInvAlt,annualRun,annualAlt,floodBenefit,annual};
+  }
+  // 最优=年费用最小
+  let best=ORDER[0];
+  for(const sk of ORDER) if(final[sk].annual<final[best].annual) best=sk;
+  return {base,alt,final,best};
+}
+// 历史较大洪水拦洪量(亿m³，任务书表6；1949年按 W=0.001234(Q峰−q安) 由常德洪峰24700推得≈5.80)
+const LANHONG=[15.2,13.6,10.1,6.5,6.2,5.8,2.31,1.38,0.31];
+// 防洪效益：拦洪量频率曲线下移防洪库容 → 多年平均减少拦洪量 W̄ → F=5+1.132W̄(万亩), B=1000F(万元)
+function floodBenefitEstimate(sk){
+  try{
+    const Vfang=CF(sk).Vflood;                 // 防洪库容(亿m³)
+    let s=0; for(const w of LANHONG) s+=Math.min(w, Vfang);  // 水库可拦蓄量，封顶=防洪库容
+    const Wbar=s/LANHONG.length;               // 多年平均减少拦洪量(亿m³)
+    const F=5+1.132*Wbar;                      // 减少耕地淹没面积(万亩)
+    return 1000*F;                             // 防洪效益(万元)
+  }catch(e){ return 0; }
+}
+
+/* =========================================================================
+   绘图（Canvas）
+   ========================================================================= */
+function setupCanvas(cv){
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth||cv.parentElement.clientWidth-2;
+  const h=cv.height;
+  cv.width=w*dpr; cv.height=h*dpr;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  return {ctx,w,h};
+}
+function plot(cv, opts){
+  const {ctx,w,h}=setupCanvas(cv);
+  const m={l:opts.ml||52, r:opts.mr||16, t:18, b:opts.mb||34};
+  const pw=w-m.l-m.r, ph=h-m.t-m.b;
+  const series=opts.series;
+  let xs=[],ys=[];
+  series.forEach(s=>s.pts.forEach(p=>{xs.push(p[0]);ys.push(p[1]);}));
+  if(opts.series2) opts.series2.forEach(s=>s.pts.forEach(p=>xs.push(p[0])));
+  let x0=opts.xmin!=null?opts.xmin:Math.min(...xs), x1=opts.xmax!=null?opts.xmax:Math.max(...xs);
+  let y0=opts.ymin!=null?opts.ymin:Math.min(...ys), y1=opts.ymax!=null?opts.ymax:Math.max(...ys);
+  if(x0===x1)x1=x0+1; if(y0===y1)y1=y0+1;
+  const X=v=>m.l+(v-x0)/(x1-x0)*pw;
+  const Y=v=>m.t+ph-(v-y0)/(y1-y0)*ph;
+  ctx.fillStyle='#0d1a2c'; ctx.fillRect(0,0,w,h);
+  // grid
+  ctx.strokeStyle='#1c3252'; ctx.fillStyle='#7b90af'; ctx.font='11px sans-serif'; ctx.lineWidth=1;
+  const ny=5;
+  for(let i=0;i<=ny;i++){
+    const yy=m.t+ph*i/ny; const val=y1-(y1-y0)*i/ny;
+    ctx.beginPath();ctx.moveTo(m.l,yy);ctx.lineTo(m.l+pw,yy);ctx.stroke();
+    ctx.textAlign='right'; ctx.fillText(val.toFixed(opts.ydec!=null?opts.ydec:0), m.l-5, yy+3);
+  }
+  const nx=opts.xticks||6;
+  for(let i=0;i<=nx;i++){
+    const xx=m.l+pw*i/nx; const val=x0+(x1-x0)*i/nx;
+    ctx.beginPath();ctx.moveTo(xx,m.t);ctx.lineTo(xx,m.t+ph);ctx.strokeStyle='#162943';ctx.stroke();
+    ctx.fillStyle='#7b90af';ctx.textAlign='center';
+    ctx.fillText(opts.xlabels?(opts.xlabels[i]||''):val.toFixed(opts.xdec!=null?opts.xdec:0), xx, m.t+ph+15);
+  }
+  // axis titles
+  ctx.fillStyle='#9fb2cd';ctx.textAlign='center';
+  if(opts.xtitle) ctx.fillText(opts.xtitle, m.l+pw/2, h-4);
+  if(opts.ytitle){ctx.save();ctx.translate(12,m.t+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText(opts.ytitle,0,0);ctx.restore();}
+  // right axis
+  let Y2=null;
+  if(opts.series2){
+    let y2s=[]; opts.series2.forEach(s=>s.pts.forEach(p=>y2s.push(p[1])));
+    let r0=opts.y2min!=null?opts.y2min:Math.min(...y2s), r1=opts.y2max!=null?opts.y2max:Math.max(...y2s);
+    if(r0===r1)r1=r0+1;
+    Y2=v=>m.t+ph-(v-r0)/(r1-r0)*ph;
+    ctx.fillStyle='#7b90af';ctx.textAlign='left';
+    for(let i=0;i<=ny;i++){const yy=m.t+ph*i/ny; const val=r1-(r1-r0)*i/ny;
+      ctx.fillText(val.toFixed(opts.y2dec!=null?opts.y2dec:0), m.l+pw+4, yy+3);}
+  }
+  // series
+  function draw(s, Yfn){
+    ctx.strokeStyle=s.color; ctx.lineWidth=s.w||2;
+    if(s.dash)ctx.setLineDash(s.dash); else ctx.setLineDash([]);
+    ctx.beginPath();
+    s.pts.forEach((p,i)=>{const xx=X(p[0]),yy=Yfn(p[1]); i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);});
+    ctx.stroke(); ctx.setLineDash([]);
+    if(s.dots){ ctx.fillStyle=s.color; s.pts.forEach(p=>{ctx.beginPath();ctx.arc(X(p[0]),Yfn(p[1]),2.4,0,7);ctx.fill();}); }
+  }
+  series.forEach(s=>draw(s,Y));
+  if(opts.series2) opts.series2.forEach(s=>draw(s,Y2));
+  // hlines
+  (opts.hlines||[]).forEach(hl=>{
+    ctx.strokeStyle=hl.color;ctx.lineWidth=1.4;ctx.setLineDash(hl.dash||[5,4]);
+    ctx.beginPath();ctx.moveTo(m.l,Y(hl.y));ctx.lineTo(m.l+pw,Y(hl.y));ctx.stroke();ctx.setLineDash([]);
+    if(hl.label){ctx.fillStyle=hl.color;ctx.textAlign='left';ctx.fillText(hl.label,m.l+4,Y(hl.y)-3);}
+  });
+}
+function bars(cv, items, opts){
+  const {ctx,w,h}=setupCanvas(cv);
+  const m={l:54,r:14,t:18,b:46}; const pw=w-m.l-m.r, ph=h-m.t-m.b;
+  ctx.fillStyle='#0d1a2c';ctx.fillRect(0,0,w,h);
+  let y1=Math.max(...items.map(i=>i.v))*1.15, y0=Math.min(0,Math.min(...items.map(i=>i.v))*1.1);
+  const Y=v=>m.t+ph-(v-y0)/(y1-y0)*ph;
+  ctx.strokeStyle='#1c3252';ctx.fillStyle='#7b90af';ctx.font='11px sans-serif';
+  for(let i=0;i<=5;i++){const yy=m.t+ph*i/5;const val=y1-(y1-y0)*i/5;
+    ctx.beginPath();ctx.moveTo(m.l,yy);ctx.lineTo(m.l+pw,yy);ctx.stroke();
+    ctx.textAlign='right';ctx.fillText(val.toFixed(0),m.l-5,yy+3);}
+  const bw=pw/items.length*0.55;
+  items.forEach((it,i)=>{
+    const cx=m.l+pw*(i+0.5)/items.length;
+    ctx.fillStyle=it.color||'#3da9fc';
+    const yy=Y(it.v), y00=Y(Math.max(y0,0));
+    ctx.fillRect(cx-bw/2, Math.min(yy,y00), bw, Math.abs(yy-y00));
+    ctx.fillStyle='#e8eef7';ctx.textAlign='center';ctx.font='12px sans-serif';
+    ctx.fillText(it.v.toFixed(0), cx, yy-5);
+    ctx.fillStyle='#9fb2cd';ctx.font='11px sans-serif';
+    ctx.fillText(it.label, cx, m.t+ph+16);
+    if(it.sub){ctx.fillText(it.sub,cx,m.t+ph+30);}
+  });
+  if(opts&&opts.ytitle){ctx.save();ctx.fillStyle='#9fb2cd';ctx.translate(12,m.t+ph/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText(opts.ytitle,0,0);ctx.restore();}
+}
+
+/* =========================================================================
+   UI 渲染
+   ========================================================================= */
+function el(id){return document.getElementById(id);}
+function tbl(rows){ return rows.map(r=>'<tr>'+r.map(c=>{
+  if(typeof c==='object') return `<${c.th?'th':'td'} class="${c.cls||''}" ${c.span?`colspan="${c.span}"`:''}>${c.v}</${c.th?'th':'td'}>`;
+  return `<td>${c}</td>`;
+}).join('')+'</tr>').join(''); }
+
+function buildParams(container, keys){
+  const labels={K:'出力系数 K',dH:'水头损失 ΔH(m)',lock:'船闸耗水(m³/s)',irr:'灌溉引水(m³/s)',
+    irrMonths:'灌溉月份(idx)',Pdesign:'设计保证率',siltYear:'年淤积量(亿m³)',siltT:'使用年限(年)',
+    Z2:'综合利用最低水位(m)',drawFrac:'消落深度比例',hRep:'重复容量利用小时',qsafe:'安全泄量(m³/s)',
+    windV:'设计风速(m/s)',fetch:'吹程(km)',free1:'安全超高1(m)',free2:'安全超高2(m)',r0:'折现率 r₀',
+    lifeH:'水电年限',lifeT:'火电年限'};
+  container.innerHTML=keys.map(k=>`<label class="fld">${labels[k]||k}
+    <input data-p="${k}" value="${P[k]}"></label>`).join('');
+  container.querySelectorAll('input[data-p]').forEach(inp=>{
+    inp.addEventListener('change',()=>{ const k=inp.dataset.p;
+      P[k]= (k==='irrMonths')? inp.value : parseFloat(inp.value);
+      clearCache();   // 参数改变后清空缓存，下次计算用新参数
+    });
+  });
+}
+
+// ---- Overview / Data tabs ----
+function renderStatic(){
+  // schemes table
+  el('t-schemes').innerHTML = tbl([
+    [{v:'方案',th:1},{v:'Ⅰ',th:1},{v:'Ⅱ',th:1},{v:'Ⅲ',th:1},{v:'Ⅳ',th:1}],
+    [{v:'正常蓄水位(m)',cls:'k'},'120','115','108','100'],
+    [{v:'备用容量 N备(万kW)',cls:'k'},'30','25','20','15'],
+    [{v:'溢洪坝 孔数×(宽×高)',cls:'k'},'10×(15×12)','12×(15×14)','12×(15×14)','14×(15×16)'],
+    [{v:'溢洪坝堰顶高程(m)',cls:'k'},'108','101','94','84'],
+    [{v:'中孔 孔数×(宽×高)',cls:'k'},'1×(13×8)','1×(13×8)','1×(13×8)','—'],
+    [{v:'中孔底坎高程(m)',cls:'k'},'82','82','82','—'],
+  ]);
+  // flows table
+  const head=[{v:'年份',th:1}].concat(DATA.monthLabels.map(m=>({v:m,th:1}))).concat([{v:'年均',th:1}]);
+  const rows=[head];
+  DATA.flows.forEach((f,i)=>{
+    const ann=f.reduce((a,b)=>a+b,0)/12;
+    rows.push([{v:DATA.years[i],cls:'k'}].concat(f.map(v=>fmt(v,0))).concat([{v:fmt(ann,0),cls:'hl'}]));
+  });
+  el('t-flows').innerHTML=tbl(rows);
+  // charts
+  plot(el('cv-zv'),{series:[{pts:DATA.zv.map(p=>[p[1],p[0]]),color:'#3da9fc',dots:1}],
+    xtitle:'库容 V (m³/s·月)',ytitle:'水位 Z (m)',ydec:0});
+  plot(el('cv-zq'),{series:[{pts:DATA.zq.map(p=>[p[1],p[0]]),color:'#19e0a8',dots:1}],
+    xtitle:'下泄流量 q (m³/s)',ytitle:'下游水位 Z (m)',ydec:0});
+  const idx=DATA.flood.Q20.map((_,i)=>i*5);
+  plot(el('cv-flood'),{xtitle:'时间 (h)',ytitle:'流量 (m³/s)',
+    series:[
+      {pts:idx.map((t,i)=>[t,DATA.flood.Q10000[i]]),color:'#ff6b6b'},
+      {pts:idx.map((t,i)=>[t,DATA.flood.Q1000[i]]),color:'#ffb454'},
+      {pts:idx.map((t,i)=>[t,DATA.flood.Q20[i]]),color:'#3da9fc'},
+    ]});
+}
+
+// ---- Xingli render ----
+let XL=null;
+function renderXingli(){
+  el('xl-scheme').textContent='方案 '+SCHEMES[CUR].name+'　正常蓄水位 ▽'+SCHEMES[CUR].Zn+' m';
+  const x=CX(CUR); XL=x;
+  // new series table
+  const head=[{v:'年份',th:1}].concat(DATA.monthLabels.map(m=>({v:m,th:1})));
+  const rows=[head];
+  for(let i=0;i<NY;i++){ const f=newSeries(i);
+    rows.push([{v:DATA.years[i],cls:'k'}].concat(f.map(v=>fmt(v,0)))); }
+  el('t-new').innerHTML=tbl(rows);
+  // dead level
+  const d=x.dl;
+  el('xl-dead').innerHTML=`
+   <table>
+   <tr><th>死水位影响因素</th><th>数值</th></tr>
+   <tr><td class="k">① 泥沙淤积容积 V<sub>淤</sub></td><td>${fmt(P.siltYear*P.siltT,3)} 亿m³ → Z₁=${fmt(d.Z1,2)} m</td></tr>
+   <tr><td class="k">② 综合利用最低水位 Z₂</td><td>${fmt(d.Z2,2)} m</td></tr>
+   <tr><td class="k">③ 消落深度限制 Z₃ (≤35%最大水头)</td><td>${fmt(d.Z3,2)} m (设计流量 q<sub>p</sub>=${fmt(d.qp,0)} m³/s)</td></tr>
+   <tr><td class="k hl">死水位 Z<sub>死</sub>=max(Z₁,Z₂,Z₃)</td><td class="hl">${fmt(d.Zdead,2)} m</td></tr>
+   <tr><td class="k">对应死库容 V<sub>死</sub></td><td>${fmt(VofZ(d.Zdead),1)} m³/s·月 (${fmt(VofZ(d.Zdead)*0.026266,3)} 亿m³)</td></tr>
+   <tr><td class="k">兴利库容 V<sub>兴</sub>=V<sub>正</sub>−V<sub>死</sub></td><td class="hl">${fmt(x.Vu,1)} m³/s·月 (${fmt(x.VuYi,3)} 亿m³)</td></tr>
+   </table>`;
+  el('xl-dead-flow').textContent=
+`因素③ 迭代过程（消落深度 ≤ ${(P.drawFrac*100)}% 最大水头）:
+`+d.hist.map(h=>` 迭代${h.it}: 假定q=${fmt(h.qp,0)}→下游水位${fmt(h.Zxia,2)}m, Z₃=${fmt(h.Z3,2)}m, Z死=${fmt(h.newZ,2)}m`).join('\n');
+  // firm power
+  const fp=x.fp;
+  el('xl-np-kpi').innerHTML=`
+    <div class="b hi"><div class="lab">保证出力 N<sub>p</sub> (P=87.5%)</div><div class="val">${fmt(x.Np_w,2)}<small> 万kW</small></div></div>
+    <div class="b"><div class="lab">设计枯水年</div><div class="val">${DATA.years[fp.design.yi]}<small> 年</small></div></div>
+    <div class="b"><div class="lab">出力变幅</div><div class="val">${fmt(wkW(fp.sorted[NY-1].Np),1)}~${fmt(wkW(fp.sorted[0].Np),0)}<small> 万kW</small></div></div>`;
+  const npts=fp.sorted.map((s,i)=>[(i+1)/(NY+1)*100, wkW(s.Np)]);
+  plot(el('cv-np'),{series:[{pts:npts,color:'#3da9fc',dots:1}],
+    xtitle:'频率 P (%)',ytitle:'供水期出力 (万kW)',ydec:0,xmin:0,xmax:100,
+    hlines:[{y:x.Np_w,color:'#19e0a8',label:'N_p='+fmt(x.Np_w,1)+'万kW (87.5%)'}]});
+  const nrows=[[{v:'排序',th:1},{v:'年份',th:1},{v:'频率P(%)',th:1},{v:'供水期出力(万kW)',th:1}]];
+  fp.sorted.forEach((s,i)=>nrows.push([i+1,DATA.years[s.yi],fmt((i+1)/(NY+1)*100,1),
+    {v:fmt(wkW(s.Np),2),cls:Math.abs(s.Np-fp.Np)<1?'hl':''}]));
+  el('t-np').innerHTML=tbl(nrows);
+  // installed capacity
+  el('xl-cap-kpi').innerHTML=`
+    <div class="b"><div class="lab">工作容量 N<sub>工</sub></div><div class="val">${fmt(x.Ngong,2)}<small> 万kW</small></div></div>
+    <div class="b"><div class="lab">必需容量 N<sub>必</sub></div><div class="val">${fmt(x.Nbi,2)}<small> 万kW</small></div></div>
+    <div class="b"><div class="lab">重复容量 N<sub>重</sub></div><div class="val">${fmt(x.Nrep,2)}<small> 万kW</small></div></div>
+    <div class="b hi"><div class="lab">装机容量 N<sub>Y</sub></div><div class="val">${fmt(x.NYcap,2)}<small> 万kW</small></div></div>`;
+  el('xl-cap-flow').textContent=
+`装机容量计算（经验法）:
+ 航运基荷工作容量  N工基 = 10 万kW
+ 担任峰荷保证出力  N峰  = N_p − 10 = ${fmt(x.Np_w,2)} − 10 = ${fmt(x.Nf,2)} 万kW
+ 峰荷工作容量      N工峰 = 3.08·N峰 + 7 = ${fmt(x.Ngf,2)} 万kW
+ 工作容量          N工   = N工基 + N工峰 = ${fmt(x.Ngong,2)} 万kW
+ 备用容量          N备   = ${SCHEMES[CUR].Nbei} 万kW (方案${SCHEMES[CUR].name})
+ 必需容量          N必   = N工 + N备 = ${fmt(x.Nbi,2)} 万kW
+ 重复容量          N重   = ${fmt(x.Nrep,2)} 万kW (由利用小时${P.hRep}h确定)
+ 装机容量          N_Y   = N必 + N重 = ${fmt(x.NYcap,2)} 万kW`;
+  // dispatch chart
+  const xl=DATA.monthLabels;
+  const envZ=x.disp.env.slice(0,12).map((v,i)=>[i,ZofV(v)]);
+  const lines=x.disp.lines.slice(0,40).map(L=>({pts:L.slice(0,12).map((v,i)=>[i,ZofV(v)]),color:'#27406a',w:1}));
+  // 加大出力辅助线（仅在汛期防破坏线低于汛限水位的月份，即加大出力区内）
+  const aux=[];
+  for(let k=1;k<=3;k++){
+    const pts=[];
+    for(let m=0;m<12;m++){
+      if(FLOOD.includes(m) && ZofV(x.disp.env[m])<x.disp.Zlim){ const Zt=ZofV(x.disp.env[m]); const Zx=x.disp.Zlim;
+        pts.push([m, Zt+(k/4)*(Zx-Zt)]); }
+    }
+    aux.push({pts,color:'#3da9fc',w:1.3,dash:[4,3]});
+  }
+  plot(el('cv-dispatch'),{xlabels:xl.concat(['']),xticks:11,
+    ytitle:'库水位 Z (m)',ydec:0,xmin:0,xmax:11,ymin:x.Zn-x.dl.Zdead>3?x.dl.Zdead-2:x.dl.Zdead-2,ymax:x.Zn+1,
+    series:lines.concat(aux).concat([
+      {pts:envZ,color:'#19e0a8',w:3,dots:1},
+    ]),
+    hlines:[{y:x.Zn,color:'#9fb2cd',label:'正常蓄水位 ▽'+x.Zn},
+            {y:x.dl.Zdead,color:'#9fb2cd',label:'死水位 ▽'+fmt(x.dl.Zdead,1)},
+            {y:x.disp.Zlim,color:'#ffb454',label:'汛限水位 ▽'+fmt(x.disp.Zlim,2)}]});
+  el('xl-disp-note').innerHTML=`设计范围共 ${x.disp.sel.length} 个年份参与防破坏线外包；汛限水位（7月底8月初防破坏线坐标）= <b>${fmt(x.disp.Zlim,2)} m</b>。加大出力区由 3 条辅助线四等分，各区出力 N_p~N_Y 线性递增。`;
+  // repeat capacity
+  el('xl-rep-kpi').innerHTML=`
+    <div class="b hi"><div class="lab">多年平均电能 E</div><div class="val">${fmt(x.E,2)}<small> 亿kWh</small></div></div>
+    <div class="b"><div class="lab">重复容量 N<sub>重</sub></div><div class="val">${fmt(x.Nrep,2)}<small> 万kW</small></div></div>
+    <div class="b"><div class="lab">径流利用系数</div><div class="val">${fmt(x.etaQ,3)}</div></div>
+    <div class="b"><div class="lab">库容系数</div><div class="val">${fmt(x.kStor,3)}</div></div>`;
+  plot(el('cv-energy'),{series:[{pts:x.rep.pts.map(p=>[p.NY,p.E]),color:'#3da9fc',dots:1}],
+    xtitle:'装机容量 N_Y (万kW)',ytitle:'多年平均电能 (亿kWh)',ydec:0});
+  plot(el('cv-hours'),{series:[{pts:x.rep.hs.map(p=>[p.Nrep,p.h]),color:'#ffb454',dots:1}],
+    xtitle:'重复容量 N重 (万kW)',ytitle:'补充利用小时 h',ydec:0,
+    hlines:[{y:P.hRep,color:'#19e0a8',label:'h='+P.hRep},
+            {y:0,color:'#27406a'}]});
+}
+
+// ---- Flood render ----
+let FL=null;
+function renderFlood(){
+  el('fl-scheme').textContent='方案 '+SCHEMES[CUR].name+'　▽'+SCHEMES[CUR].Zn+' m';
+  const f=CF(CUR); FL=f;
+  const sc=f.sc;
+  // gates table
+  el('t-gates').innerHTML=tbl([
+   [{v:'泄洪建筑',th:1},{v:'孔数',th:1},{v:'宽×高(m)',th:1},{v:'堰顶/底坎(m)',th:1}],
+   [{v:'溢洪坝',cls:'k'},sc.surf.n,sc.surf.B+'×'+sc.surf.a,sc.surf.sill],
+   [{v:'中孔',cls:'k'},sc.mid.n||0,sc.mid.n?(sc.mid.B+'×'+sc.mid.a):'—',sc.mid.n?sc.mid.sill:'—'],
+   [{v:'起调(汛限)水位',cls:'k'},{v:fmt(f.Zlim,2)+' m',span:3,cls:'hl'}],
+  ]);
+  // capacity curve
+  const zc=[]; for(let z=sc.surf.sill; z<=sc.Zn+18; z+=0.5) zc.push([capQ(z,sc),z]);
+  plot(el('cv-cap'),{series:[{pts:zc,color:'#3da9fc'}],
+    xtitle:'下泄能力 q (m³/s)',ytitle:'库水位 Z (m)',ydec:0,
+    hlines:[{y:f.Zlim,color:'#ffb454',label:'汛限'},{y:sc.Zn,color:'#9fb2cd',label:'正常'}]});
+  // KPI
+  el('fl-kpi').innerHTML=`
+   <div class="b"><div class="lab">防洪高水位 (20年)</div><div class="val">${fmt(f.Zfh,2)}<small> m</small></div></div>
+   <div class="b hi"><div class="lab">设计洪水位 (1000年)</div><div class="val">${fmt(f.Zdesign,2)}<small> m</small></div></div>
+   <div class="b hi"><div class="lab">校核洪水位 (10000年)</div><div class="val">${fmt(f.Zcheck,2)}<small> m</small></div></div>
+   <div class="b"><div class="lab">设计最大泄量</div><div class="val">${fmt(f.qdesign,0)}<small> m³/s</small></div></div>
+   <div class="b"><div class="lab">校核最大泄量</div><div class="val">${fmt(f.qcheck,0)}<small> m³/s</small></div></div>
+   <div class="b"><div class="lab">总库容</div><div class="val">${fmt(f.Vtotal,2)}<small> 亿m³</small></div></div>`;
+  // routing process chart
+  const r=f.r10000, r2=f.r1000; const idx=r.rows.map(x=>x.t*5);
+  plot(el('cv-route'),{xtitle:'时间 (h)',ydec:0,ml:54,mr:42,
+    series:[
+      {pts:r.rows.map((x,i)=>[idx[i],x.Q]),color:'#ff6b6b'},
+      {pts:r2.rows.map((x,i)=>[idx[i],x.Q]),color:'#ffb454'},
+      {pts:r.rows.map((x,i)=>[idx[i],x.q]),color:'#3da9fc',w:2},
+    ],
+    ymin:0,
+    series2:[{pts:r.rows.map((x,i)=>[idx[i],x.Z]),color:'#19e0a8',w:2.4}],
+    y2min:f.Zlim-1, y2max:f.Zcheck+1, y2dec:0,
+    ytitle:'流量 (m³/s)'});
+  // routing table
+  const rr=[[{v:'时段',th:1},{v:'t(h)',th:1},{v:'入库Q(m³/s)',th:1},{v:'下泄q(m³/s)',th:1},{v:'库水位Z(m)',th:1},{v:'库容(亿m³)',th:1}]];
+  r.rows.forEach(x=>rr.push([x.t,x.t*5,fmt(x.Q,0),fmt(x.q,0),fmt(x.Z,2),fmt(x.V,2)]));
+  el('t-route').innerHTML=tbl(rr);
+  // crest
+  el('fl-crest').innerHTML=`
+   <table>
+    <tr><th>项目</th><th>设计情况(千年)</th><th>校核情况(万年)</th></tr>
+    <tr><td class="k">洪水位 (m)</td><td>${fmt(f.Zdesign,2)}</td><td>${fmt(f.Zcheck,2)}</td></tr>
+    <tr><td class="k">风速 (m/s)</td><td>${fmt(P.windV,1)}</td><td>${fmt(P.windV*0.8,1)} (×0.8)</td></tr>
+    <tr><td class="k">风浪高 h=0.0208·V^1.25·D^(1/3) (m)</td><td>${fmt(f.h1,3)}</td><td>${fmt(f.h2,3)}</td></tr>
+    <tr><td class="k">安全超高 (m)</td><td>${fmt(P.free1,2)}</td><td>${fmt(P.free2,2)}</td></tr>
+    <tr><td class="k">坝顶高程 (m)</td><td>${fmt(f.crest1,2)}</td><td>${fmt(f.crest2,2)}</td></tr>
+    <tr><td class="k hl">坝顶高程 = max (m)</td><td colspan="2" class="hl">${fmt(f.crest,2)} m（由${f.crest1>=f.crest2?'设计':'校核'}情况控制）</td></tr>
+   </table>
+   <p class="note">吹程 D=${P.fetch} km；混凝土1级坝，安全超高取 0.7 / 0.5 m。</p>`;
+}
+
+// ---- Econ render ----
+function renderEcon(){
+  const allXL={};
+  ORDER.forEach(sk=>{ allXL[sk]=CX(sk); });
+  const ec=computeEcon(allXL);
+  // base table
+  const B=ec.base;
+  el('t-econ-base').innerHTML=tbl([
+   [{v:'项目 (万元)',th:1},{v:'Ⅰ ▽120',th:1},{v:'Ⅱ ▽115',th:1},{v:'Ⅲ ▽108',th:1},{v:'Ⅳ ▽100',th:1}],
+   row('永久建筑投资',sk=>SCHEMES[sk].econ.perm),
+   row('机电设备投资',sk=>SCHEMES[sk].econ.elec),
+   row('临时及其他投资',sk=>SCHEMES[sk].econ.other),
+   row('总投资 K',sk=>B[sk].Ktotal,'hl'),
+   row('水库补偿费',sk=>SCHEMES[sk].econ.comp),
+   row('投资折算至施工期末',sk=>B[sk].invEnd),
+   row('装机容量(万kW)',sk=>B[sk].NYcap),
+   row('年运行费 u₁(运行)',sk=>B[sk].u1),
+   row('年大修费 u₂',sk=>B[sk].u2),
+   row('年补偿提成 u₃',sk=>B[sk].u3),
+   row('年运行费合计',sk=>B[sk].annualRun,'hl'),
+  ]);
+  function row(name,fn,cls){
+    return [{v:name,cls:'k'}].concat(ORDER.map(sk=>({v:fmt(fn(sk),0),cls:cls||''})));
+  }
+  // alt table
+  const A=ec.alt;
+  el('t-econ-alt').innerHTML=tbl([
+   [{v:'项目 (相对方案Ⅰ)',th:1},{v:'Ⅰ',th:1},{v:'Ⅱ',th:1},{v:'Ⅲ',th:1},{v:'Ⅳ',th:1}],
+   [{v:'必需容量差 ΔN必(万kW)',cls:'k'}].concat(ORDER.map(sk=>fmt(A[sk].dN,2))),
+   [{v:'电能差 ΔE(亿kWh)',cls:'k'}].concat(ORDER.map(sk=>fmt(A[sk].dE,2))),
+   [{v:'替代火电投资(万元)',cls:'k'}].concat(ORDER.map(sk=>fmt(A[sk].Kelec,0))),
+   [{v:'煤矿投资(万元)',cls:'k'}].concat(ORDER.map(sk=>fmt(A[sk].Kcoal,0))),
+   [{v:'替代年运行费+燃料(万元)',cls:'k'}].concat(ORDER.map(sk=>fmt(A[sk].annualAlt,0))),
+  ]);
+  // final
+  const F=ec.final;
+  el('t-econ-final').innerHTML=tbl([
+   [{v:'年费用构成 (万元/年)',th:1},{v:'Ⅰ',th:1},{v:'Ⅱ',th:1},{v:'Ⅲ',th:1},{v:'Ⅳ',th:1}],
+   [{v:'水电投资年费',cls:'k'}].concat(ORDER.map(sk=>fmt(F[sk].annInvSelf,0))),
+   [{v:'替代火电年费',cls:'k'}].concat(ORDER.map(sk=>fmt(F[sk].annInvAlt,0))),
+   [{v:'水电年运行费',cls:'k'}].concat(ORDER.map(sk=>fmt(F[sk].annualRun,0))),
+   [{v:'替代年运行费',cls:'k'}].concat(ORDER.map(sk=>fmt(F[sk].annualAlt,0))),
+   [{v:'防洪效益(负费用)',cls:'k'}].concat(ORDER.map(sk=>'−'+fmt(F[sk].floodBenefit,0))),
+   [{v:'年费用合计',cls:'k'}].concat(ORDER.map(sk=>({v:fmt(F[sk].annual,0),cls:sk===ec.best?'hl':''}))),
+  ]);
+  el('ec-kpi').innerHTML=ORDER.map(sk=>`
+    <div class="b ${sk===ec.best?'hi':''}"><div class="lab">方案 ${SCHEMES[sk].name} ▽${SCHEMES[sk].Zn} 年费用</div>
+    <div class="val">${fmt(F[sk].annual,0)}<small> 万元</small>${sk===ec.best?'<span class="badge best">最优</span>':''}</div></div>`).join('');
+  bars(el('cv-econ'), ORDER.map(sk=>({label:'方案'+SCHEMES[sk].name,sub:'▽'+SCHEMES[sk].Zn,
+    v:F[sk].annual, color:sk===ec.best?'#19e0a8':'#3da9fc'})), {ytitle:'年费用(万元)'});
+  return ec;
+}
+
+// ---- Summary ----
+function renderSummary(){
+  el('sm-note').textContent='正在计算……';
+  setTimeout(()=>{
+    const res={};
+    ORDER.forEach(sk=>{ res[sk]={xl:CX(sk), fl:CF(sk)}; });
+    const allXL={}; ORDER.forEach(sk=>allXL[sk]=res[sk].xl);
+    const ec=computeEcon(allXL);
+    const R=(name,fn,d=2,unit='')=>[{v:name,cls:'k'}].concat(ORDER.map(sk=>fmt(fn(res[sk],sk),d)));
+    const rows=[
+     [{v:'水利指标',th:1},{v:'方案Ⅰ ▽120',th:1},{v:'方案Ⅱ ▽115',th:1},{v:'方案Ⅲ ▽108',th:1},{v:'方案Ⅳ ▽100',th:1}],
+     R('正常蓄水位 (m)',(r,sk)=>SCHEMES[sk].Zn,0),
+     R('死水位 (m)',r=>r.xl.dl.Zdead),
+     R('防洪限制水位 (m)',r=>r.xl.disp.Zlim),
+     R('防洪高水位 (m)',r=>r.fl.Zfh),
+     R('设计洪水位 (m)',r=>r.fl.Zdesign),
+     R('校核洪水位 (m)',r=>r.fl.Zcheck),
+     R('坝顶高程 (m)',r=>r.fl.crest),
+     R('总库容 (亿m³)',r=>r.fl.Vtotal),
+     R('兴利库容 (亿m³)',r=>r.xl.VuYi),
+     R('防洪库容 (亿m³)',r=>r.fl.Vflood),
+     R('保证出力 N_p (万kW)',r=>r.xl.Np_w),
+     R('工作容量 (万kW)',r=>r.xl.Ngong),
+     R('必需容量 (万kW)',r=>r.xl.Nbi),
+     R('重复容量 (万kW)',r=>r.xl.Nrep),
+     R('装机容量 N_Y (万kW)',r=>r.xl.NYcap),
+     R('多年平均发电量 (亿kWh)',r=>r.xl.E),
+     R('设计最大泄量 (m³/s)',r=>r.fl.qdesign,0),
+     R('校核最大泄量 (m³/s)',r=>r.fl.qcheck,0),
+     R('库容系数',r=>r.xl.kStor,3),
+     R('径流利用系数',r=>r.xl.etaQ,3),
+     [{v:'年费用 (万元)',cls:'k'}].concat(ORDER.map(sk=>({v:fmt(ec.final[sk].annual,0),cls:sk===ec.best?'hl':''}))),
+    ];
+    el('t-summary').innerHTML=tbl(rows);
+    el('sm-note').innerHTML=`经济比较结果：<b class="ok">方案 ${SCHEMES[ec.best].name}（正常蓄水位 ▽${SCHEMES[ec.best].Zn} m）年费用最小，为推荐最优方案。</b>
+      &nbsp; 各项指标按当前参数计算，可在各模块调整参数后重新汇总。`;
+  },30);
+}
+
+/* =========================================================================
+   交互绑定
+   ========================================================================= */
+let xlInit=false, flInit=false, ecInit=false;
+function switchTab(t){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+t));
+  if(t==='overview'||t==='data') renderStatic();
+  else if(t==='xingli'&&!xlInit){xlInit=true;renderXingli();}
+  else if(t==='flood'&&!flInit){flInit=true;renderFlood();}
+  else if(t==='econ'&&!ecInit){ecInit=true;renderEcon();}
+}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.t)));
+document.querySelectorAll('.schip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('.schip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); CUR=c.dataset.s;
+  // 切换方案后重算当前可见模块
+  if(el('p-xingli').classList.contains('on')){xlInit=true;renderXingli();}
+  if(el('p-flood').classList.contains('on')){flInit=true;renderFlood();}
+}));
+
+buildParams(el('xl-params'),['K','dH','lock','irr','irrMonths','Pdesign','siltYear','siltT','Z2','drawFrac','hRep']);
+buildParams(el('fl-params'),['qsafe','windV','fetch','free1','free2']);
+buildParams(el('ec-params'),['r0','lifeH','lifeT']);
+el('xl-run').addEventListener('click',()=>{clearCache();renderXingli();});
+el('fl-run').addEventListener('click',()=>{clearCache();renderFlood();});
+el('ec-run').addEventListener('click',()=>{clearCache();renderEcon();});
+el('sm-run').addEventListener('click',()=>{clearCache();renderSummary();});
+
+window.addEventListener('resize',()=>{
+  const on=document.querySelector('.panel.on'); if(!on)return;
+  const cur=on.id.replace('p-','');
+  if(cur==='data'||cur==='overview')renderStatic();
+  else if(cur==='xingli'&&xlInit)renderXingli();
+  else if(cur==='flood'&&flInit)renderFlood();
+});
+
+renderStatic();
+</script>
+</body>
+</html>
