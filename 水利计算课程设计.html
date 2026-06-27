@@ -100,7 +100,7 @@
 <header class="top">
   <div>
     <h1>五强溪水电站 · 水利计算课程设计计算系统</h1>
-    <div class="sub">兴利计算 · 防洪计算 · 经济比较 &nbsp;|&nbsp; 河海大学水文水资源学院</div>
+    <div class="sub">兴利计算 · 防洪计算 · 经济比较</div>
   </div>
   <div class="scheme-pick">
     <b>当前方案</b>
@@ -810,8 +810,11 @@ function floodBenefitEstimate(sk){
    ========================================================================= */
 function setupCanvas(cv){
   const dpr=window.devicePixelRatio||1;
+  // 首次记录目标高度(CSS px)；否则每次渲染都以 cv.height 再乘 dpr，切换方案时画布会越拉越大
+  if(!cv.dataset.baseH) cv.dataset.baseH=cv.height;
+  const h=parseInt(cv.dataset.baseH,10);
   const w=cv.clientWidth||cv.parentElement.clientWidth-2;
-  const h=cv.height;
+  cv.style.height=h+'px';            // 画布无 CSS 高度，须显式锁定显示高度
   cv.width=w*dpr; cv.height=h*dpr;
   const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
   return {ctx,w,h};
